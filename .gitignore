@@ -1,5 +1,4 @@
 node_modules
-./dist
+dist/
 tsconfig.tsbuildinfo
 .gitignore.swp
-dist/
