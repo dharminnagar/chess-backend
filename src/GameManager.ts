@@ -1,12 +1,6 @@
 import { WebSocket } from "ws";
-import { INIT_GAME } from "./messages";
-
-interface Game {
-  id: number;
-  name: string;
-  player1: WebSocket;
-  player2: WebSocket;
-}
+import { INIT_GAME, MOVE } from "./messages";
+import { Game } from "./Game";
 
 export class GameManager {
   private games: Game[];
@@ -33,10 +27,21 @@ export class GameManager {
       const message = JSON.parse(data.toString());
       if (message.type === INIT_GAME) {
         if (this.pendingUser) {
-          // start a new game
-          // this.createGame(socket, this.pendingUser);
+          const game = new Game(this.pendingUser, socket);
+          this.games.push(game);
+          this.pendingUser = null;
         } else {
           this.pendingUser = socket;
+        }
+      }
+
+      if (message.type === MOVE) {
+        const game = this.games.find(
+          (game) => game.player1 === socket || game.player2 === socket
+        );
+
+        if (game) {
+          game.makeMove(socket, message.move);
         }
       }
     });
