@@ -7,14 +7,12 @@ export class Game {
   public player1: WebSocket;
   public player2: WebSocket;
   private board: Chess;
-  private moves: string[];
   private startTime: Date;
 
   constructor(player1: WebSocket, player2: WebSocket) {
     this.player1 = player1;
     this.player2 = player2;
     this.board = new Chess();
-    this.moves = [];
     this.startTime = new Date();
 
     // send the initial board to both players
@@ -22,7 +20,7 @@ export class Game {
       JSON.stringify({
         type: INIT_GAME,
         payload: {
-          board: this.board.fen(),
+          color: "white",
           startTime: this.startTime,
         },
       })
@@ -32,7 +30,7 @@ export class Game {
       JSON.stringify({
         type: INIT_GAME,
         payload: {
-          board: this.board.fen(),
+          color: "black",
           startTime: this.startTime,
         },
       })
@@ -54,13 +52,11 @@ export class Game {
     MoveSchema.parse(move);
 
     // check if it is the player's turn
-    // Length is even, it is white's turn
-    // Length is odd, it is black's turn
-    if (this.moves.length % 2 === 0 && socket !== this.player1) {
+    if (this.board.turn() === "w" && socket !== this.player1) {
       return;
     }
 
-    if (this.moves.length % 2 === 1 && socket !== this.player2) {
+    if (this.board.turn() === "b" && socket !== this.player2) {
       return;
     }
 
@@ -70,7 +66,8 @@ export class Game {
       this.board.move(move);
     } catch (error) {
       // send an error message to the player
-      return error;
+      console.log(error);
+      return;
     }
 
     // check if the game is over
@@ -79,7 +76,7 @@ export class Game {
     // Checkmate, stalemate etc.
     if (this.board.isGameOver()) {
       // send the game over message to both players
-      this.player1.emit(
+      this.player1.send(
         JSON.stringify({
           type: "GAME_OVER",
           payload: {
@@ -87,7 +84,7 @@ export class Game {
           },
         })
       );
-      this.player2.emit(
+      this.player2.send(
         JSON.stringify({
           type: "GAME_OVER",
           payload: {
@@ -98,20 +95,26 @@ export class Game {
     }
 
     // send the updated board to both players
-    if (this.moves.length % 2 === 0) {
-      this.player2.emit(
+    if (this.board.turn() === "w") {
+      // It was black's turn
+      this.player1.send(
         JSON.stringify({
           type: MOVE,
           payload: move,
         })
       );
     } else {
-      this.player1.emit(
+      // It was white's turn
+      this.player2.send(
         JSON.stringify({
           type: MOVE,
           payload: move,
         })
       );
     }
+
+    console.log("Move made:", move);
+    console.log("Move count: ", this.board.moveNumber());
+    console.log("Next Turn: ", this.board.turn());
   }
 }
