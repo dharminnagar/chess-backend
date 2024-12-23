@@ -1,7 +1,7 @@
 import { Chess } from "chess.js";
 import { WebSocket } from "ws";
 import { z } from "zod";
-import { MOVE } from "./messages";
+import { INIT_GAME, MOVE } from "./messages";
 
 export class Game {
   public player1: WebSocket;
@@ -16,6 +16,27 @@ export class Game {
     this.board = new Chess();
     this.moves = [];
     this.startTime = new Date();
+
+    // send the initial board to both players
+    this.player1.send(
+      JSON.stringify({
+        type: INIT_GAME,
+        payload: {
+          board: this.board.fen(),
+          startTime: this.startTime,
+        },
+      })
+    );
+
+    this.player2.send(
+      JSON.stringify({
+        type: INIT_GAME,
+        payload: {
+          board: this.board.fen(),
+          startTime: this.startTime,
+        },
+      })
+    );
   }
 
   makeMove(
