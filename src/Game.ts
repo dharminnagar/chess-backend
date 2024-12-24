@@ -1,4 +1,4 @@
-import { Chess } from "chess.js";
+import { BLACK, Chess, WHITE } from "chess.js";
 import { WebSocket } from "ws";
 import { z } from "zod";
 import { INIT_GAME, MOVE } from "./messages";
@@ -52,11 +52,11 @@ export class Game {
     MoveSchema.parse(move);
 
     // check if it is the player's turn
-    if (this.board.turn() === "w" && socket !== this.player1) {
+    if (this.board.turn() === WHITE && socket !== this.player1) {
       return;
     }
 
-    if (this.board.turn() === "b" && socket !== this.player2) {
+    if (this.board.turn() === BLACK && socket !== this.player2) {
       return;
     }
 
@@ -80,7 +80,7 @@ export class Game {
         JSON.stringify({
           type: "GAME_OVER",
           payload: {
-            result: this.board.turn() === "w" ? "BLACK_WON" : "WHITE_WON",
+            result: this.board.turn() === WHITE ? "BLACK_WON" : "WHITE_WON",
           },
         })
       );
@@ -88,14 +88,14 @@ export class Game {
         JSON.stringify({
           type: "GAME_OVER",
           payload: {
-            result: this.board.turn() === "w" ? "BLACK_WON" : "WHITE_WON",
+            result: this.board.turn() === WHITE ? "BLACK_WON" : "WHITE_WON",
           },
         })
       );
     }
 
     // send the updated board to both players
-    if (this.board.turn() === "w") {
+    if (this.board.turn() === WHITE) {
       // It was black's turn
       this.player1.send(
         JSON.stringify({
