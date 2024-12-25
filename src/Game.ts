@@ -101,23 +101,19 @@ export class Game {
     }
 
     // send the updated board to both players
-    if (this.board.turn() === WHITE) {
-      // It was black's turn
-      this.player1.send(
-        JSON.stringify({
-          type: MOVE,
-          payload: move,
-        })
-      );
-    } else {
-      // It was white's turn
-      this.player2.send(
-        JSON.stringify({
-          type: MOVE,
-          payload: move,
-        })
-      );
-    }
+    this.player1.send(
+      JSON.stringify({
+        type: MOVE,
+        payload: move,
+      })
+    );
+
+    this.player2.send(
+      JSON.stringify({
+        type: MOVE,
+        payload: move,
+      })
+    );
 
     console.log("Move made:", move);
     console.log("Move count: ", this.board.moveNumber());
