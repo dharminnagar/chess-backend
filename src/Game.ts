@@ -49,7 +49,13 @@ export class Game {
       from: z.string(),
       to: z.string(),
     });
-    MoveSchema.parse(move);
+    try {
+      MoveSchema.parse(move);
+    } catch (e) {
+      console.log("ZODERROR: Invalid type of move", move);
+      console.log(e);
+      return;
+    }
 
     // check if it is the player's turn
     if (this.board.turn() === WHITE && socket !== this.player1) {
